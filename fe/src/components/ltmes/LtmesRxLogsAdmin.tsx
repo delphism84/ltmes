@@ -143,6 +143,32 @@ type RecordLogRow = {
   Ad2?: number | null
 }
 
+/** 기록(recordLogs) 무게 컬럼 — 조회·데이터 목록 테이블 공통 */
+const RECORD_WEIGHT_COLS = [
+  { key: 'G1' as const, label: 'G1' },
+  { key: 'S2' as const, label: 'S2' },
+  { key: 'S1' as const, label: 'S1' },
+  { key: 'W' as const, label: 'W' },
+  { key: 'M3' as const, label: 'M3' },
+  { key: 'C1' as const, label: 'C1' },
+  { key: 'C2' as const, label: 'C2' },
+  { key: 'Ad1' as const, label: 'Ad1' },
+  { key: 'Ad2' as const, label: 'Ad2' }
+] as const
+
+function formatRecordWeight(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(Number(v))) return '—'
+  const n = Number(v)
+  if (Number.isInteger(n)) return String(n)
+  const t = n.toFixed(2)
+  return t.replace(/\.?0+$/, '')
+}
+
+const recordTableThMeta = 'px-1.5 py-1.5 text-left font-medium text-gray-500 whitespace-nowrap text-[10px]'
+const recordTableThNum = 'px-0.5 py-1.5 text-center font-medium text-gray-500 whitespace-nowrap text-[10px]'
+const recordTableTdMeta = 'px-1.5 py-1 text-left text-[11px] text-gray-800 whitespace-nowrap align-middle'
+const recordTableTdNum = 'px-0.5 py-1 text-center font-mono tabular-nums text-[11px] text-gray-800 whitespace-nowrap align-middle'
+
 const NAV_ITEMS: { key: MenuKey; label: string; icon: typeof Zap }[] = [
   { key: 'realtime', label: '실시간 모니터링', icon: Zap },
   { key: 'history', label: '기록 조회', icon: Clock },
@@ -1337,40 +1363,46 @@ function RecordHistoryPanel({ api, jwt }: { api: ApiCallback; jwt: string }) {
       </div>
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4">기록 목록</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[720px]">
+        <div className="overflow-x-auto -mx-1">
+          <table className="w-max max-w-full text-[11px] border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 text-gray-500">
-                <th className="py-3 px-2 text-center font-medium">시간</th>
-                <th className="py-3 px-2 text-center font-medium">규격</th>
-                <th className="py-3 px-2 text-center font-medium">G1</th>
-                <th className="py-3 px-2 text-center font-medium">S2</th>
-                <th className="py-3 px-2 text-center font-medium">S1</th>
-                <th className="py-3 px-2 text-center font-medium">W</th>
-                <th className="py-3 px-2 text-center font-medium">M3</th>
-                <th className="py-3 px-2 text-center font-medium">비고</th>
+              <tr className="border-b border-gray-200">
+                <th className={recordTableThMeta}>시간</th>
+                <th className={recordTableThMeta}>규격</th>
+                {RECORD_WEIGHT_COLS.map(c => (
+                  <th key={c.key} className={recordTableThNum}>
+                    {c.label}
+                  </th>
+                ))}
+                <th className={recordTableThMeta}>비고</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-400">
+                  <td colSpan={3 + RECORD_WEIGHT_COLS.length} className="py-8 text-center text-gray-400">
                     조회 버튼으로 기간 내 기록을 불러옵니다.
                   </td>
                 </tr>
               ) : (
                 rows.map(r => (
                   <tr key={r._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-2 px-2 text-center whitespace-nowrap">
-                      {formatTime(r.createdAt)}
+                    <td className={recordTableTdMeta}>{formatTime(r.createdAt)}</td>
+                    <td
+                      className={`${recordTableTdMeta} max-w-[5rem] truncate`}
+                      title={r.specId || ''}
+                    >
+                      {r.specId || '—'}
                     </td>
-                    <td className="py-2 px-2 text-center">{r.specId || '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.G1 ?? '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.S2 ?? '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.S1 ?? '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.W ?? '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.M3 ?? '—'}</td>
-                    <td className="py-2 px-2 text-center text-gray-500 truncate max-w-[120px]">
+                    {RECORD_WEIGHT_COLS.map(c => (
+                      <td key={c.key} className={recordTableTdNum}>
+                        {formatRecordWeight(r[c.key])}
+                      </td>
+                    ))}
+                    <td
+                      className={`${recordTableTdMeta} text-gray-500 max-w-[6rem] truncate`}
+                      title={r.note || ''}
+                    >
                       {r.note || '—'}
                     </td>
                   </tr>
@@ -1590,54 +1622,66 @@ function RecordDataListPanel({ api, jwt }: { api: ApiCallback; jwt: string }) {
           <List className="w-5 h-5 text-gray-400" />
           <h3 className="text-lg font-bold text-gray-900">데이터 목록</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[880px]">
+        <div className="overflow-x-auto -mx-1">
+          <table className="w-max max-w-full text-[11px] border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 text-gray-500">
-                <th className="py-3 px-2 text-center font-medium">시간</th>
-                <th className="py-3 px-2 text-center font-medium">규격</th>
-                <th className="py-3 px-2 text-center font-medium">G1</th>
-                <th className="py-3 px-2 text-center font-medium">W</th>
-                <th className="py-3 px-2 text-center font-medium">비고</th>
-                <th className="py-3 px-2 text-center font-medium w-28">작업</th>
+              <tr className="border-b border-gray-200">
+                <th className={recordTableThMeta}>시간</th>
+                <th className={recordTableThMeta}>규격</th>
+                {RECORD_WEIGHT_COLS.map(c => (
+                  <th key={c.key} className={recordTableThNum}>
+                    {c.label}
+                  </th>
+                ))}
+                <th className={recordTableThMeta}>비고</th>
+                <th className={`${recordTableThNum} w-0`}>작업</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-400">
+                  <td colSpan={4 + RECORD_WEIGHT_COLS.length} className="py-8 text-center text-gray-400">
                     조회 후 행을 수정·삭제할 수 있습니다.
                   </td>
                 </tr>
               ) : (
                 rows.map(r => (
                   <tr key={r._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-2 px-2 text-center whitespace-nowrap">
-                      {formatTime(r.createdAt)}
+                    <td className={recordTableTdMeta}>{formatTime(r.createdAt)}</td>
+                    <td
+                      className={`${recordTableTdMeta} max-w-[5rem] truncate`}
+                      title={r.specId || ''}
+                    >
+                      {r.specId || '—'}
                     </td>
-                    <td className="py-2 px-2 text-center">{r.specId || '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.G1 ?? '—'}</td>
-                    <td className="py-2 px-2 text-center">{r.W ?? '—'}</td>
-                    <td className="py-2 px-2 text-center text-gray-500 truncate max-w-[140px]">
+                    {RECORD_WEIGHT_COLS.map(c => (
+                      <td key={c.key} className={recordTableTdNum}>
+                        {formatRecordWeight(r[c.key])}
+                      </td>
+                    ))}
+                    <td
+                      className={`${recordTableTdMeta} text-gray-500 max-w-[6rem] truncate`}
+                      title={r.note || ''}
+                    >
                       {r.note || '—'}
                     </td>
-                    <td className="py-2 px-2 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                    <td className={`${recordTableTdNum} w-0`}>
+                      <div className="flex items-center justify-center gap-0.5">
                         <button
                           type="button"
                           onClick={() => openEdit(r)}
-                          className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"
+                          className="p-1 rounded-md text-indigo-600 hover:bg-indigo-50"
                           title="수정"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => void deleteRow(r)}
-                          className="p-1.5 rounded-lg text-red-600 hover:bg-red-50"
+                          className="p-1 rounded-md text-red-600 hover:bg-red-50"
                           title="삭제"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
