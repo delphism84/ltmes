@@ -1,0 +1,20 @@
+# backend
+be/node_modules/
+be/dist/
+be/.env
+be/*.log
+
+# frontend
+fe/node_modules/
+fe/.next/
+fe/out/
+fe/build/
+fe/.env*.local
+fe/.vercel
+fe/*.tsbuildinfo
+
+# repo root
+.DS_Store
+*.log
+.env
+.env.*

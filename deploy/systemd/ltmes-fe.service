@@ -1,0 +1,22 @@
+# nginx가 127.0.0.1:63105 로 프록시한다고 가정 (deploy/nginx/lt.lunarsystem.co.kr.conf).
+[Unit]
+Description=LTMES Frontend Next.js (npm run dev:bind)
+After=network-online.target ltmes-be.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# User=www-data
+WorkingDirectory=/lunar/ltmes/fe
+Environment=NODE_ENV=development
+Environment=BE_INTERNAL_URL=http://127.0.0.1:48998
+EnvironmentFile=-/etc/ltmes/fe.env
+ExecStart=/usr/bin/npm run dev:bind
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ltmes-fe
+
+[Install]
+WantedBy=multi-user.target

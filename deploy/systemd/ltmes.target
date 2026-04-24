@@ -1,0 +1,7 @@
+[Unit]
+Description=LTMES stack (BE + FE, npm dev)
+Wants=ltmes-be.service ltmes-fe.service
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target

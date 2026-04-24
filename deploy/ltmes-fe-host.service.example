@@ -1,0 +1,17 @@
+# 예전 방식: 호스트에서 next start (Docker 미사용 시)
+# 설치: sudo cp deploy/ltmes-fe-host.service.example /etc/systemd/system/ltmes-fe.service
+#       WorkingDirectory 를 실제 경로로 수정 후: sudo systemctl daemon-reload && sudo systemctl enable --now ltmes-fe
+[Unit]
+Description=LTMES Admin Next.js (host, no Docker)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/lunar/ltmes/fe
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npx next start -H 127.0.0.1 -p 63105
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+# 설치: README.txt 참고. 배포 경로가 /lunar/ltmes 가 아니면 WorkingDirectory·ReadWritePaths 수정.
+[Unit]
+Description=LTMES Backend (npm run dev)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 코드·node_modules 읽기 가능한 사용자로 변경 (예: User=deploy, 또는 주석 해제 후 www-data + 디렉터리 권한)
+# User=www-data
+# Group=www-data
+WorkingDirectory=/lunar/ltmes/be
+Environment=NODE_ENV=development
+EnvironmentFile=-/etc/ltmes/be.env
+ExecStart=/usr/bin/npm run dev
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ltmes-be
+# 로그·업로드가 필요하면 추가
+# ReadWritePaths=/lunar/ltmes/be
+
+[Install]
+WantedBy=multi-user.target

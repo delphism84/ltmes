@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bootstrap 5 — 화이트 / 라이트 관리자 테마 (최근 SaaS admin 톤) */
+:root {
+  --bs-body-font-size: 10pt;
+  --bs-body-bg: #f8fafd;
+  --bs-body-color: #0f172a;
+  --bs-primary: #1e293b;
+  --bs-secondary: #64748b;
+  --bs-success: #059669;
+  --bs-danger: #dc2626;
+  --bs-warning: #d97706;
+  --bs-info: #0284c7;
+  --bs-primary-rgb: 30, 41, 59;
+  --bs-link-color: #2563eb;
+  --bs-link-hover-color: #1d4ed8;
+  --bs-border-color: #e8edf4;
+  --bs-border-radius: 0.75rem;
+  --bs-border-radius-sm: 0.5rem;
+  --bs-card-border-radius: 0.75rem;
+  --bs-card-border-color: #e8edf4;
+  --bs-card-border-width: 1px;
+  --bs-card-bg: #ffffff;
+  --bs-card-cap-bg: #fdfdff;
+  --bs-box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --bs-box-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --bs-tertiary-bg: #f7f9fc;
+  --bs-table-bg: #ffffff;
+  --bs-table-striped-bg: #feffff;
+  --bs-table-hover-bg: #fbfcfe;
+  --bs-form-control-bg: #ffffff;
+  --bs-input-border-color: #e2e8f0;
+  --bs-nav-tabs-link-active-bg: #ffffff;
+  --bs-nav-tabs-link-active-border-color: #e8edf4 #e8edf4 #ffffff;
+}
+
+html {
+  font-size: 10pt;
+}
+
+body {
+  font-size: 10pt;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 모든 테이블/그리드 텍스트를 10pt 기준으로 통일 */
+.table,
+.table th,
+.table td,
+[role='grid'],
+[role='treegrid'] {
+  font-size: 10pt !important;
+}
+
+.agent-tree-nested {
+  margin-left: 0.75rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--bs-border-color);
+}
+
+/* 관리 콘솔 — 통일된 그리드/테이블 래퍼 (라운드·슬레이트 보더·스티키 헤더) */
+.admin-console-grid {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  overflow: hidden;
+}
+.admin-console-grid .table-responsive {
+  overflow: auto;
+  max-height: min(72vh, 900px);
+}
+.admin-console-grid--agent-tree .table-responsive {
+  max-height: min(72vh, 880px);
+}
+.admin-console-grid thead.table-light,
+.admin-console-grid thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.admin-console-grid thead th {
+  background-color: rgb(248 250 252) !important;
+  border-bottom: 1px solid rgb(226 232 240) !important;
+  box-shadow: 0 1px 0 rgb(226 232 240);
+}
+
+/* react-datepicker — 관리 콘솔 sticky 헤더 위에 표시 */
+.admin-datetime-filter .react-datepicker-wrapper {
+  width: 100%;
+}
+.admin-datepicker-popper,
+.admin-datetime-filter .react-datepicker-popper {
+  z-index: 1060 !important;
+}
+
+@keyframes ltmes-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ltmes-spin {
+  animation: ltmes-spin 0.8s linear infinite;
+}

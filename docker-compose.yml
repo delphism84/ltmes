@@ -1,0 +1,47 @@
+# 전부 Docker로 띄울 때: 호스트에서 48998·63105 점유 프로세스(systemd next, node BE)를 먼저 중지할 것.
+# FE만 다른 포트: LTMES_FE_PORT=63106 docker compose up -d ltmes-fe ltmes-be
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "48999:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: Eogks!@34
+    volumes:
+      - ltmes_mongo_data:/data/db
+
+  # nginx(호스트)가 127.0.0.1:48998 로 프록시 — 기동 전 호스트의 동일 포트 프로세스를 중지할 것
+  ltmes-be:
+    build: ./be
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:48998:48998"
+    environment:
+      MONGODB_URI: mongodb://admin:Eogks%21%4034@mongo:27017/?authSource=admin
+      PORT: "48998"
+      JWT_SECRET: ${JWT_SECRET:-ltmes-dev-change-me}
+      # 콤마 구분. 로컬 IP/포트에서 직접 BE 호출할 때 필요할 수 있음
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://lt.lunarsystem.co.kr,http://127.0.0.1:63105,http://localhost:63105}
+      WS_PATH_INGEST: /ws/ingest
+      WS_PATH_APP: /ws/app
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-Eogks!@34}
+    depends_on:
+      - mongo
+
+  # nginx(호스트)가 127.0.0.1:63105 로 프록시 — Next.js 컨테이너는 내부 3000
+  ltmes-fe:
+    build:
+      context: ./fe
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+        BE_INTERNAL_URL: http://ltmes-be:48998
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${LTMES_FE_PORT:-63105}:3000"
+    environment:
+      NODE_ENV: production
+
+volumes:
+  ltmes_mongo_data:
